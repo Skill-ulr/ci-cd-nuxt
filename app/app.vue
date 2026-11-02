@@ -7,8 +7,6 @@ const erreur = ref('')
 const chargement = ref(false)
 const wishlist = ref([])
 
-const prenom = 'Ulrich'
-
 // Charger la wishlist au démarrage
 onMounted(() => {
   const sauvegarde = localStorage.getItem('wishlist')
