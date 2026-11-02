@@ -30,6 +30,8 @@ jobs:
 
       - name: verifier le formatage avec prettier
         run: npm run format:check
+      - name: Vérifier les types TypeScript
+        run: npm run typecheck
 
       - name: Construire le projet
         run: npm run build

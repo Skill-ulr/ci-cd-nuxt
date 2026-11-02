@@ -1,29 +1,47 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const recherche = ref('')
-const pokemon = ref(null)
-const erreur = ref('')
-const chargement = ref(false)
-const wishlist = ref([])
+// Type d'un Pokémon récupéré depuis l'API
+type Pokemon = {
+  id: number
+  name: string
+  sprites: {
+    front_default: string | null
+  }
+}
+
+
+// Type d'un Pokémon enregistré dans la wishlist
+type WishlistItem = {
+  id: number
+  name: string
+  image: string | null
+}
+
+// Variables
+const recherche = ref<string>('')
+const pokemon = ref<Pokemon | null>(null)
+const erreur = ref<string>('')
+const chargement = ref<boolean>(false)
+const wishlist = ref<WishlistItem[]>([])
 
 // Charger la wishlist au démarrage
 onMounted(() => {
   const sauvegarde = localStorage.getItem('wishlist')
 
   if (sauvegarde !== null) {
-    wishlist.value = JSON.parse(sauvegarde)
+    wishlist.value = JSON.parse(sauvegarde) as WishlistItem[]
   }
 })
 
 // Sauvegarder la wishlist
-function sauvegarderWishlist() {
+function sauvegarderWishlist(): void {
   const texte = JSON.stringify(wishlist.value)
   localStorage.setItem('wishlist', texte)
 }
 
 // Rechercher un Pokémon
-async function rechercherPokemon() {
+async function rechercherPokemon(): Promise<void> {
   if (recherche.value === '') {
     erreur.value = 'Entre le nom d’un Pokémon.'
     return
@@ -42,24 +60,28 @@ async function rechercherPokemon() {
       throw new Error('Pokémon introuvable')
     }
 
-    pokemon.value = await resultat.json()
+    pokemon.value = (await resultat.json()) as Pokemon
   } catch {
-    erreur.value = 'Pokémon introuvable. Vérifie le nom.'
+    erreur.value = 'Pokémon introuvable.'
   }
 
   chargement.value = false
 }
 
 // Ajouter un Pokémon
-function ajouterPokemon() {
+function ajouterPokemon(): void {
+  if (pokemon.value === null) {
+    return
+  }
+
   for (let i = 0; i < wishlist.value.length; i++) {
-    if (wishlist.value[i].id === pokemon.value.id) {
-      erreur.value = 'Ce Pokémon est déjà dans ta wishlist.'
+    if (wishlist.value[i]?.id === pokemon.value.id) {
+      erreur.value = 'Ce Pokémon est déjà dans la wishlist.'
       return
     }
   }
 
-  const nouveauPokemon = {
+  const nouveauPokemon: WishlistItem = {
     id: pokemon.value.id,
     name: pokemon.value.name,
     image: pokemon.value.sprites.front_default,
@@ -72,9 +94,9 @@ function ajouterPokemon() {
 }
 
 // Supprimer un Pokémon
-function supprimerPokemon(id) {
+function supprimerPokemon(id: number): void {
   for (let i = 0; i < wishlist.value.length; i++) {
-    if (wishlist.value[i].id === id) {
+    if (wishlist.value[i]?.id === id) {
       wishlist.value.splice(i, 1)
       break
     }
@@ -113,7 +135,11 @@ function supprimerPokemon(id) {
       <h2>Pokémon trouvé</h2>
 
       <div class="pokemon-card">
-        <img :src="pokemon.sprites.front_default" :alt="pokemon.name" />
+        <img
+          v-if="pokemon.sprites.front_default"
+          :src="pokemon.sprites.front_default"
+          :alt="pokemon.name"
+        />
 
         <h3>{{ pokemon.name }}</h3>
 
@@ -133,7 +159,7 @@ function supprimerPokemon(id) {
 
       <div class="pokemon-grid">
         <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
-          <img :src="element.image" :alt="element.name" />
+          <img v-if="element.image" :src="element.image" :alt="element.name" />
 
           <h3>{{ element.name }}</h3>
 

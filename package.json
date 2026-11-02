@@ -9,7 +9,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
@@ -19,6 +20,8 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
-    "prettier": "^3.9.10"
+    "prettier": "^3.9.10",
+    "typescript": "^6.0.3",
+    "vue-tsc": "^3.3.14"
   }
 }
