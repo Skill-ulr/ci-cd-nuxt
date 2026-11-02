@@ -8,7 +8,8 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
@@ -16,5 +17,8 @@
     "nuxt": "^4.6.3",
     "vue": "^3.5.44",
     "vue-router": "^5.4.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
   }
 }

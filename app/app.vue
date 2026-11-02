@@ -1,4 +1,3 @@
-
 <script setup>
 import { ref, onMounted } from 'vue'
 
@@ -7,6 +6,8 @@ const pokemon = ref(null)
 const erreur = ref('')
 const chargement = ref(false)
 const wishlist = ref([])
+
+const prenom = 'Ulrich'
 
 // Charger la wishlist au démarrage
 onMounted(() => {
@@ -36,7 +37,7 @@ async function rechercherPokemon() {
 
   try {
     const resultat = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${recherche.value.toLowerCase()}`
+      `https://pokeapi.co/api/v2/pokemon/${recherche.value.toLowerCase()}`,
     )
 
     if (!resultat.ok) {
@@ -44,7 +45,6 @@ async function rechercherPokemon() {
     }
 
     pokemon.value = await resultat.json()
-
   } catch {
     erreur.value = 'Pokémon introuvable. Vérifie le nom.'
   }
@@ -64,7 +64,7 @@ function ajouterPokemon() {
   const nouveauPokemon = {
     id: pokemon.value.id,
     name: pokemon.value.name,
-    image: pokemon.value.sprites.front_default
+    image: pokemon.value.sprites.front_default,
   }
 
   wishlist.value.push(nouveauPokemon)
@@ -88,7 +88,6 @@ function supprimerPokemon(id) {
 
 <template>
   <main class="page">
-
     <header class="header">
       <h1>PokéWishlist</h1>
       <p>Construis ta collection de Pokémon favoris !</p>
@@ -100,16 +99,12 @@ function supprimerPokemon(id) {
         v-model="recherche"
         placeholder="Rechercher un Pokémon..."
         @keyup.enter="rechercherPokemon"
-      >
+      />
 
-      <button @click="rechercherPokemon">
-        Rechercher
-      </button>
+      <button @click="rechercherPokemon">Rechercher</button>
     </section>
 
-    <p v-if="chargement" class="message">
-      Recherche en cours...
-    </p>
+    <p v-if="chargement" class="message">Recherche en cours...</p>
 
     <p v-if="erreur" class="error">
       {{ erreur }}
@@ -120,18 +115,13 @@ function supprimerPokemon(id) {
       <h2>Pokémon trouvé</h2>
 
       <div class="pokemon-card">
-        <img
-          :src="pokemon.sprites.front_default"
-          :alt="pokemon.name"
-        >
+        <img :src="pokemon.sprites.front_default" :alt="pokemon.name" />
 
         <h3>{{ pokemon.name }}</h3>
 
         <p>Pokémon n°{{ pokemon.id }}</p>
 
-        <button @click="ajouterPokemon">
-          Ajouter à ma wishlist
-        </button>
+        <button @click="ajouterPokemon">Ajouter à ma wishlist</button>
       </div>
     </section>
 
@@ -144,32 +134,19 @@ function supprimerPokemon(id) {
       </p>
 
       <div class="pokemon-grid">
-
-        <div
-          v-for="element in wishlist"
-          :key="element.id"
-          class="pokemon-card"
-        >
-          <img
-            :src="element.image"
-            :alt="element.name"
-          >
+        <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
+          <img :src="element.image" :alt="element.name" />
 
           <h3>{{ element.name }}</h3>
 
           <p>Pokémon n°{{ element.id }}</p>
 
-          <button
-            class="delete-button"
-            @click="supprimerPokemon(element.id)"
-          >
+          <button class="delete-button" @click="supprimerPokemon(element.id)">
             Supprimer
           </button>
         </div>
-
       </div>
     </section>
-
   </main>
 </template>
 
