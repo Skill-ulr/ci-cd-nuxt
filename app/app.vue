@@ -10,7 +10,6 @@ type Pokemon = {
   }
 }
 
-
 // Type d'un Pokémon enregistré dans la wishlist
 type WishlistItem = {
   id: number
