@@ -2,8 +2,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-console.log('Test ESLint')
-
 const recherche = ref('')
 const pokemon = ref(null)
 const erreur = ref('')
