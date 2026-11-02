@@ -25,6 +25,9 @@ jobs:
 
       - name: Installer les dependances
         run: npm ci
+       
+      - name: verifier le code avec Eslint
+        run: npm run lint
 
       - name: Construire le projet
         run: npm run build
