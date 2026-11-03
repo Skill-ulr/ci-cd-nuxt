@@ -6,7 +6,7 @@ export type WishlistItem = {
 
 export function addPokemon(
   wishlist: WishlistItem[],
-  pokemon: WishlistItem
+  pokemon: WishlistItem,
 ): WishlistItem[] {
   // Vérifier si le Pokémon est déjà présent
   for (let i = 0; i < wishlist.length; i++) {

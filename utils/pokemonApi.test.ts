@@ -11,8 +11,8 @@ describe('rechercherPokemon', () => {
       id: 25,
       name: 'pikachu',
       sprites: {
-        front_default: 'https://image-pikachu.png'
-      }
+        front_default: 'https://image-pikachu.png',
+      },
     }
 
     vi.stubGlobal(
@@ -20,8 +20,8 @@ describe('rechercherPokemon', () => {
       vi.fn().mockResolvedValue({
         ok: true,
         status: 200,
-        json: async () => pokemonFictif
-      })
+        json: async () => pokemonFictif,
+      }),
     )
 
     const resultat = await rechercherPokemon('pikachu')
@@ -36,11 +36,12 @@ describe('rechercherPokemon', () => {
       'fetch',
       vi.fn().mockResolvedValue({
         ok: false,
-        status: 404
-      })
+        status: 404,
+      }),
     )
 
-    await expect(rechercherPokemon('pokemon-inexistant'))
-      .rejects.toThrow('Pokémon introuvable')
+    await expect(rechercherPokemon('pokemon-inexistant')).rejects.toThrow(
+      'Pokémon introuvable',
+    )
   })
 })

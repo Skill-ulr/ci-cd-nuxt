@@ -102,17 +102,11 @@ onMounted(() => {
     </p>
 
     <div v-if="pokemon" class="pokemon-card">
-      <img
-        v-if="pokemon.image"
-        :src="pokemon.image"
-        :alt="pokemon.name"
-      />
+      <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" />
 
       <h2>{{ pokemon.name }}</h2>
 
-      <button @click="ajouterPokemon">
-        Ajouter à ma wishlist
-      </button>
+      <button @click="ajouterPokemon">Ajouter à ma wishlist</button>
     </div>
 
     <section class="wishlist">
@@ -123,22 +117,12 @@ onMounted(() => {
       </p>
 
       <div class="pokemon-grid">
-        <div
-          v-for="element in wishlist"
-          :key="element.id"
-          class="pokemon-card"
-        >
-          <img
-            v-if="element.image"
-            :src="element.image"
-            :alt="element.name"
-          />
+        <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
+          <img v-if="element.image" :src="element.image" :alt="element.name" />
 
           <h3>{{ element.name }}</h3>
 
-          <button @click="supprimerPokemon(element.id)">
-            Supprimer
-          </button>
+          <button @click="supprimerPokemon(element.id)">Supprimer</button>
         </div>
       </div>
     </section>

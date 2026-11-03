@@ -7,7 +7,7 @@ describe('addPokemon', () => {
     const pokemon: WishlistItem = {
       id: 1,
       name: 'bulbasaur',
-      image: null
+      image: null,
     }
 
     const resultat = addPokemon(wishlist, pokemon)
@@ -20,7 +20,7 @@ describe('addPokemon', () => {
     const pokemon: WishlistItem = {
       id: 1,
       name: 'bulbasaur',
-      image: null
+      image: null,
     }
 
     const wishlist = [pokemon]
@@ -36,14 +36,14 @@ describe('addPokemon', () => {
       wishlist.push({
         id: i,
         name: `pokemon-${i}`,
-        image: null
+        image: null,
       })
     }
 
     const nouveauPokemon: WishlistItem = {
       id: 7,
       name: 'pokemon-7',
-      image: null
+      image: null,
     }
 
     const resultat = addPokemon(wishlist, nouveauPokemon)
