@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { addPokemon } from '../utils/wishlist'
 import { ref, onMounted } from 'vue'
 
 // Type d'un Pokémon récupéré depuis l'API
@@ -73,23 +74,15 @@ function ajouterPokemon(): void {
     return
   }
 
-  for (let i = 0; i < wishlist.value.length; i++) {
-    if (wishlist.value[i]?.id === pokemon.value.id) {
-      erreur.value = 'Ce Pokémon est déjà dans la wishlist.'
-      return
-    }
-  }
-
-  const nouveauPokemon: WishlistItem = {
+  const nouveauPokemon = {
     id: pokemon.value.id,
     name: pokemon.value.name,
-    image: pokemon.value.sprites.front_default,
+    image: pokemon.value.sprites.front_default
   }
 
-  wishlist.value.push(nouveauPokemon)
+  wishlist.value = addPokemon(wishlist.value, nouveauPokemon)
 
   sauvegarderWishlist()
-  erreur.value = ''
 }
 
 // Supprimer un Pokémon
