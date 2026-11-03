@@ -1,4 +1,3 @@
-
 import { Hono } from 'hono'
 
 type Pokemon = {

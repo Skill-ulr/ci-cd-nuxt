@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest'
 import { app } from './app.js'
 
@@ -13,18 +12,18 @@ describe('Routes PokéWishlist', () => {
     const response = await app.request('/wishlist', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         id: 25,
-        name: 'Pikachu'
-      })
+        name: 'Pikachu',
+      }),
     })
 
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual({
       id: 25,
-      name: 'Pikachu'
+      name: 'Pikachu',
     })
   })
 
@@ -33,16 +32,16 @@ describe('Routes PokéWishlist', () => {
     await app.request('/wishlist', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         id: 999,
-        name: 'Testmon'
-      })
+        name: 'Testmon',
+      }),
     })
 
     const response = await app.request('/wishlist/999', {
-      method: 'DELETE'
+      method: 'DELETE',
     })
 
     expect(response.status).toBe(200)
@@ -50,7 +49,7 @@ describe('Routes PokéWishlist', () => {
 
   it('DELETE /wishlist/:id retourne 404 si le Pokémon est absent', async () => {
     const response = await app.request('/wishlist/123456', {
-      method: 'DELETE'
+      method: 'DELETE',
     })
 
     expect(response.status).toBe(404)
