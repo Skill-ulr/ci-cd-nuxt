@@ -11,7 +11,6 @@ onMounted(() => {
 })
 
 // Variables
-const recherche = ref('')
 const pokemon = ref<WishlistItem | null>(null)
 const erreur = ref('')
 const chargement = ref(false)
