@@ -9,11 +9,11 @@ app.get('/', (c) => {
 
 app.get('/health', (c) => {
   return c.json({
-    status: 'ok'
+    status: 'ok',
   })
 })
 
 serve({
   fetch: app.fetch,
-  port: 3000
+  port: 3000,
 })
