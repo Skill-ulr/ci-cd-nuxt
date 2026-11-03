@@ -3,5 +3,5 @@ import { app } from './app.js'
 
 serve({
   fetch: app.fetch,
-  port: 3000
+  port: 3000,
 })
