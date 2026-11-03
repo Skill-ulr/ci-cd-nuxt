@@ -33,5 +33,5 @@ jobs:
       - name: Vérifier les types TypeScript
         run: npm run typecheck
 
-      - name: Construire le projet
+      - name: vérifier le build nuxt (contruction du projet)
         run: npm run build
