@@ -9,6 +9,10 @@ import {
   chargerWishlist
 } from '../utils/wishlistStorage'
 
+onMounted(() => {
+  wishlist.value = chargerWishlist()
+})
+
 // Variables
 const recherche = ref('')
 const pokemon = ref<WishlistItem | null>(null)
@@ -83,7 +87,7 @@ sauvegarderWishlist(wishlist.value)
         type="text"
         placeholder="Nom d'un Pokémon..."
         required
-      />
+      >
 
       <button type="submit" :disabled="chargement">
         {{ chargement ? 'Recherche...' : 'Rechercher' }}
@@ -95,7 +99,7 @@ sauvegarderWishlist(wishlist.value)
     </p>
 
     <div v-if="pokemon" class="pokemon-card">
-      <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" />
+      <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" >
 
       <h2>{{ pokemon.name }}</h2>
 
@@ -111,7 +115,7 @@ sauvegarderWishlist(wishlist.value)
 
       <div class="pokemon-grid">
         <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
-          <img v-if="element.image" :src="element.image" :alt="element.name" />
+          <img v-if="element.image" :src="element.image" :alt="element.name" >
 
           <h3>{{ element.name }}</h3>
 

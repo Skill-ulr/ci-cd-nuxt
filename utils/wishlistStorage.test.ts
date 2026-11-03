@@ -11,17 +11,13 @@ describe('wishlistStorage', () => {
     stockage = {}
 
     vi.stubGlobal('localStorage', {
-      setItem: (cle: string, valeur: string) => {
+    setItem: (cle: string, valeur: string) => {
         stockage[cle] = valeur
-      },
+    },
 
-      getItem: (cle: string) => {
+    getItem: (cle: string) => {
         return stockage[cle] ?? null
-      },
-
-      removeItem: (cle: string) => {
-        delete stockage[cle]
-      }
+    }
     })
   })
 
