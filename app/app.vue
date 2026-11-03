@@ -4,10 +4,7 @@ import { ref, onMounted } from 'vue'
 import { addPokemon } from '../utils/wishlist'
 import type { WishlistItem } from '../utils/wishlist'
 import { rechercherPokemon as chercherPokemonAPI } from '../utils/pokemonApi'
-import {
-  sauvegarderWishlist,
-  chargerWishlist
-} from '../utils/wishlistStorage'
+import { sauvegarderWishlist, chargerWishlist } from '../utils/wishlistStorage'
 
 onMounted(() => {
   wishlist.value = chargerWishlist()
@@ -68,7 +65,7 @@ function supprimerPokemon(id: number): void {
     }
   }
 
-  sauvegarderWishlist(wishlist.value) 
+  sauvegarderWishlist(wishlist.value)
 }
 
 // Charger la wishlist au démarrage
@@ -87,7 +84,7 @@ sauvegarderWishlist(wishlist.value)
         type="text"
         placeholder="Nom d'un Pokémon..."
         required
-      >
+      />
 
       <button type="submit" :disabled="chargement">
         {{ chargement ? 'Recherche...' : 'Rechercher' }}
@@ -99,7 +96,7 @@ sauvegarderWishlist(wishlist.value)
     </p>
 
     <div v-if="pokemon" class="pokemon-card">
-      <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" >
+      <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" />
 
       <h2>{{ pokemon.name }}</h2>
 
@@ -115,7 +112,7 @@ sauvegarderWishlist(wishlist.value)
 
       <div class="pokemon-grid">
         <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
-          <img v-if="element.image" :src="element.image" :alt="element.name" >
+          <img v-if="element.image" :src="element.image" :alt="element.name" />
 
           <h3>{{ element.name }}</h3>
 

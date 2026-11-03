@@ -1,8 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import {
-  sauvegarderWishlist,
-  chargerWishlist
-} from './wishlistStorage'
+import { sauvegarderWishlist, chargerWishlist } from './wishlistStorage'
 
 describe('wishlistStorage', () => {
   let stockage: Record<string, string>
@@ -11,13 +8,13 @@ describe('wishlistStorage', () => {
     stockage = {}
 
     vi.stubGlobal('localStorage', {
-    setItem: (cle: string, valeur: string) => {
+      setItem: (cle: string, valeur: string) => {
         stockage[cle] = valeur
-    },
+      },
 
-    getItem: (cle: string) => {
+      getItem: (cle: string) => {
         return stockage[cle] ?? null
-    }
+      },
     })
   })
 
@@ -26,9 +23,7 @@ describe('wishlistStorage', () => {
   })
 
   it('sauvegarde la wishlist', () => {
-    const wishlist = [
-      { id: 25, name: 'pikachu', image: 'image.png' }
-    ]
+    const wishlist = [{ id: 25, name: 'pikachu', image: 'image.png' }]
 
     sauvegarderWishlist(wishlist)
 
@@ -36,9 +31,7 @@ describe('wishlistStorage', () => {
   })
 
   it('relit la wishlist sauvegardée', () => {
-    const wishlist = [
-      { id: 25, name: 'pikachu', image: 'image.png' }
-    ]
+    const wishlist = [{ id: 25, name: 'pikachu', image: 'image.png' }]
 
     stockage['wishlist'] = JSON.stringify(wishlist)
 
