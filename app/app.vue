@@ -11,6 +11,7 @@ onMounted(() => {
 })
 
 // Variables
+const recherche = ref('')
 const pokemon = ref<WishlistItem | null>(null)
 const erreur = ref('')
 const chargement = ref(false)
@@ -132,7 +133,7 @@ sauvegarderWishlist(wishlist.value)
 }
 
 h1 {
-  color: #3404f5;
+  color: #e3350d;
 }
 
 form {
