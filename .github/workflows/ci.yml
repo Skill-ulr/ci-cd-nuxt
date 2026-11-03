@@ -22,16 +22,27 @@ jobs:
         with:
           node-version: 24
 
+      # FRONTEND NUXT
       - name: Installer les dependances
         run: npm ci
 
-      - name: verifier le code avec Eslint
+      - name: Verifier le code avec ESLint
         run: npm run lint
 
-      - name: verifier le formatage avec prettier
+      - name: Verifier le formatage avec Prettier
         run: npm run format:check
-      - name: Vérifier les types TypeScript
+
+      - name: Verifier les types TypeScript
         run: npm run typecheck
 
-      - name: vérifier le build nuxt (contruction du projet)
+      - name: Verifier le build Nuxt
         run: npm run build
+
+      # BACKEND HONO
+      - name: Installer les dependances du backend
+        run: npm ci
+        working-directory: backend
+
+      - name: Build du backend Hono
+        run: npm run build
+        working-directory: backend
