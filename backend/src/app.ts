@@ -8,7 +8,7 @@ type Pokemon = {
 const app = new Hono()
 
 // Limite de Pokémon dans la wishlist (règle métier)
-const MAX_POKEMON = 7
+const MAX_POKEMON = 6
 
 // Tableau temporaire en mémoire
 const wishlist: Pokemon[] = []
@@ -33,7 +33,12 @@ app.post('/wishlist', async (c) => {
   }
 
   // Règle 1 : entrée invalide (id doit être un nombre, name un texte non vide)
-  if (!pokemon || typeof pokemon.id !== 'number' || typeof pokemon.name !== 'string' || pokemon.name.trim() === '') {
+  if (
+    !pokemon ||
+    typeof pokemon.id !== 'number' ||
+    typeof pokemon.name !== 'string' ||
+    pokemon.name.trim() === ''
+  ) {
     return c.json({ message: 'Pokémon invalide' }, 400)
   }
 

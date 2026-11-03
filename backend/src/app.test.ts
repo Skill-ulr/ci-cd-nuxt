@@ -6,7 +6,7 @@ async function ajouterPokemon(id: number, name: string) {
   return app.request('/wishlist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id, name })
+    body: JSON.stringify({ id, name }),
   })
 }
 
@@ -73,17 +73,17 @@ describe('Règles métier PokéWishlist', () => {
     const response = await app.request('/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: 25 }) // pas de "name"
+      body: JSON.stringify({ id: 25 }), // pas de "name"
     })
 
     expect(response.status).toBe(400)
   })
 
-  it('refuse une entrée invalide : id qui n\'est pas un nombre (400)', async () => {
+  it("refuse une entrée invalide : id qui n'est pas un nombre (400)", async () => {
     const response = await app.request('/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: 'abc', name: 'Pikachu' })
+      body: JSON.stringify({ id: 'abc', name: 'Pikachu' }),
     })
 
     expect(response.status).toBe(400)
