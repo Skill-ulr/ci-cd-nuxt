@@ -133,7 +133,7 @@ sauvegarderWishlist(wishlist.value)
 }
 
 h1 {
-  color: #e3350d;
+  color: #3404f5;
 }
 
 form {
