@@ -46,3 +46,8 @@ jobs:
       - name: Build du backend Hono
         run: npm run build
         working-directory: backend
+
+      # NOUVEAU : si un test échoue, cette étape devient rouge et la CI échoue
+      - name: Tests backend Hono
+        run: npm run test
+        working-directory: backend

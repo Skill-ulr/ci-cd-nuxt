@@ -1,4 +1,3 @@
-```vue
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { addPokemon } from '../utils/wishlist'
@@ -195,4 +194,3 @@ button:disabled {
   margin-top: 40px;
 }
 </style>
-```
