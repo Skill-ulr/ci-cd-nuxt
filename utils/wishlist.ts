@@ -16,7 +16,7 @@ export function addPokemon(
   }
 
   // Vérifier si la wishlist contient déjà 6 Pokémon
-  if (wishlist.length >= 10) {
+  if (wishlist.length >= 6) {
     return wishlist
   }
 

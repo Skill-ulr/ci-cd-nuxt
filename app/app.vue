@@ -1,91 +1,62 @@
+```vue
 <script setup lang="ts">
-import { addPokemon } from '../utils/wishlist'
 import { ref, onMounted } from 'vue'
-
-// Type d'un Pokémon récupéré depuis l'API
-type Pokemon = {
-  id: number
-  name: string
-  sprites: {
-    front_default: string | null
-  }
-}
-
-// Type d'un Pokémon enregistré dans la wishlist
-type WishlistItem = {
-  id: number
-  name: string
-  image: string | null
-}
+import { addPokemon } from '../utils/wishlist'
+import type { WishlistItem } from '../utils/wishlist'
+import { rechercherPokemon as chercherPokemonAPI } from '../utils/pokemonApi'
 
 // Variables
-const recherche = ref<string>('')
-const pokemon = ref<Pokemon | null>(null)
-const erreur = ref<string>('')
-const chargement = ref<boolean>(false)
+const recherche = ref('')
+const pokemon = ref<WishlistItem | null>(null)
+const erreur = ref('')
+const chargement = ref(false)
 const wishlist = ref<WishlistItem[]>([])
 
-// Charger la wishlist au démarrage
-onMounted(() => {
-  const sauvegarde = localStorage.getItem('wishlist')
-
-  if (sauvegarde !== null) {
-    wishlist.value = JSON.parse(sauvegarde) as WishlistItem[]
-  }
-})
-
-// Sauvegarder la wishlist
+// Sauvegarder la wishlist dans localStorage
 function sauvegarderWishlist(): void {
-  const texte = JSON.stringify(wishlist.value)
-  localStorage.setItem('wishlist', texte)
+  localStorage.setItem('wishlist', JSON.stringify(wishlist.value))
 }
 
-// Rechercher un Pokémon
+// Rechercher un Pokémon avec la PokéAPI
 async function rechercherPokemon(): Promise<void> {
-  if (recherche.value === '') {
-    erreur.value = 'Entre le nom d’un Pokémon.'
-    return
-  }
-
   chargement.value = true
   erreur.value = ''
   pokemon.value = null
 
   try {
-    const resultat = await fetch(
-      `https://pokeapi.co/api/v2/pokemon/${recherche.value.toLowerCase()}`,
-    )
-
-    if (!resultat.ok) {
-      throw new Error('Pokémon introuvable')
-    }
-
-    pokemon.value = (await resultat.json()) as Pokemon
+    pokemon.value = await chercherPokemonAPI(recherche.value)
   } catch {
-    erreur.value = 'Pokémon introuvable.'
+    erreur.value = 'Pokémon introuvable. Vérifie son nom.'
+  } finally {
+    chargement.value = false
   }
-
-  chargement.value = false
 }
 
-// Ajouter un Pokémon
+// Ajouter un Pokémon à la wishlist
 function ajouterPokemon(): void {
   if (pokemon.value === null) {
     return
   }
 
-  const nouveauPokemon = {
-    id: pokemon.value.id,
-    name: pokemon.value.name,
-    image: pokemon.value.sprites.front_default
+  if (wishlist.value.length >= 6) {
+    erreur.value = 'Ta wishlist contient déjà 6 Pokémon.'
+    return
   }
 
-  wishlist.value = addPokemon(wishlist.value, nouveauPokemon)
+  const ancienneLongueur = wishlist.value.length
 
+  wishlist.value = addPokemon(wishlist.value, pokemon.value)
+
+  if (wishlist.value.length === ancienneLongueur) {
+    erreur.value = 'Ce Pokémon est déjà dans ta wishlist.'
+    return
+  }
+
+  erreur.value = ''
   sauvegarderWishlist()
 }
 
-// Supprimer un Pokémon
+// Supprimer un Pokémon de la wishlist
 function supprimerPokemon(id: number): void {
   for (let i = 0; i < wishlist.value.length; i++) {
     if (wishlist.value[i]?.id === id) {
@@ -96,68 +67,76 @@ function supprimerPokemon(id: number): void {
 
   sauvegarderWishlist()
 }
+
+// Charger la wishlist au démarrage
+onMounted(() => {
+  const sauvegarde = localStorage.getItem('wishlist')
+
+  if (sauvegarde) {
+    wishlist.value = JSON.parse(sauvegarde) as WishlistItem[]
+  }
+})
 </script>
 
 <template>
-  <main class="page">
-    <header class="header">
-      <h1>PokéWishlist</h1>
-      <p>Construis ta collection de Pokémon favoris !</p>
-    </header>
+  <main class="container">
+    <h1>Pokémon Wishlist</h1>
 
-    <!-- Recherche -->
-    <section class="search">
+    <p>Recherche tes Pokémon préférés et ajoute-les à ta wishlist.</p>
+
+    <form @submit.prevent="rechercherPokemon">
       <input
         v-model="recherche"
-        placeholder="Rechercher un Pokémon..."
-        @keyup.enter="rechercherPokemon"
+        type="text"
+        placeholder="Nom d'un Pokémon..."
+        required
       />
 
-      <button @click="rechercherPokemon">Rechercher</button>
-    </section>
-
-    <p v-if="chargement" class="message">Recherche en cours...</p>
+      <button type="submit" :disabled="chargement">
+        {{ chargement ? 'Recherche...' : 'Rechercher' }}
+      </button>
+    </form>
 
     <p v-if="erreur" class="error">
       {{ erreur }}
     </p>
 
-    <!-- Pokémon recherché -->
-    <section v-if="pokemon" class="result">
-      <h2>Pokémon trouvé</h2>
+    <div v-if="pokemon" class="pokemon-card">
+      <img
+        v-if="pokemon.image"
+        :src="pokemon.image"
+        :alt="pokemon.name"
+      />
 
-      <div class="pokemon-card">
-        <img
-          v-if="pokemon.sprites.front_default"
-          :src="pokemon.sprites.front_default"
-          :alt="pokemon.name"
-        />
+      <h2>{{ pokemon.name }}</h2>
 
-        <h3>{{ pokemon.name }}</h3>
+      <button @click="ajouterPokemon">
+        Ajouter à ma wishlist
+      </button>
+    </div>
 
-        <p>Pokémon n°{{ pokemon.id }}</p>
-
-        <button @click="ajouterPokemon">Ajouter à ma wishlist</button>
-      </div>
-    </section>
-
-    <!-- Wishlist -->
     <section class="wishlist">
-      <h2>Ma collection</h2>
+      <h2>Ma wishlist ({{ wishlist.length }}/6)</h2>
 
-      <p v-if="wishlist.length === 0" class="message">
-        Ta wishlist est vide. Recherche un Pokémon pour commencer !
+      <p v-if="wishlist.length === 0">
+        Aucun Pokémon dans ta wishlist pour le moment.
       </p>
 
       <div class="pokemon-grid">
-        <div v-for="element in wishlist" :key="element.id" class="pokemon-card">
-          <img v-if="element.image" :src="element.image" :alt="element.name" />
+        <div
+          v-for="element in wishlist"
+          :key="element.id"
+          class="pokemon-card"
+        >
+          <img
+            v-if="element.image"
+            :src="element.image"
+            :alt="element.name"
+          />
 
           <h3>{{ element.name }}</h3>
 
-          <p>Pokémon n°{{ element.id }}</p>
-
-          <button class="delete-button" @click="supprimerPokemon(element.id)">
+          <button @click="supprimerPokemon(element.id)">
             Supprimer
           </button>
         </div>
@@ -167,112 +146,75 @@ function supprimerPokemon(id: number): void {
 </template>
 
 <style scoped>
-.page {
-  max-width: 1000px;
+.container {
+  max-width: 900px;
   margin: 0 auto;
   padding: 30px;
-  font-family: Arial, sans-serif;
-  color: #333;
-}
-
-.header {
   text-align: center;
-  background: #e53935;
-  color: white;
-  padding: 25px;
-  border-radius: 12px;
+  font-family: Arial, sans-serif;
 }
 
-.header h1 {
-  margin: 0;
-  font-size: 36px;
+h1 {
+  color: #e3350d;
 }
 
-.search {
+form {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin: 30px 0;
+  margin: 25px 0;
 }
 
 input {
-  padding: 12px;
-  width: 300px;
+  padding: 10px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 button {
-  padding: 12px 18px;
-  border: none;
-  border-radius: 8px;
-  background: #e53935;
+  padding: 10px 15px;
+  background-color: #e3350d;
   color: white;
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #c62828;
+  background-color: #b52b0b;
 }
 
-.result,
-.wishlist {
-  margin-top: 35px;
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+}
+
+.pokemon-card {
+  padding: 15px;
+  margin: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+}
+
+.pokemon-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
 }
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
 }
 
-.pokemon-card {
-  background: #f5f5f5;
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  box-shadow: 0 3px 8px #00000015;
-}
-
-.pokemon-card img {
-  width: 120px;
-  height: 120px;
-  object-fit: contain;
-}
-
-.pokemon-card h3 {
-  text-transform: capitalize;
-}
-
-.delete-button {
-  background: #555;
-}
-
-.delete-button:hover {
-  background: #333;
-}
-
-.message {
-  text-align: center;
-  color: #666;
-}
-
-.error {
-  color: #e53935;
-  text-align: center;
-}
-
-@media (max-width: 600px) {
-  .search {
-    flex-direction: column;
-  }
-
-  input {
-    width: auto;
-  }
-
-  .page {
-    padding: 15px;
-  }
+.wishlist {
+  margin-top: 40px;
 }
 </style>
+```
