@@ -4,6 +4,10 @@ import { ref, onMounted } from 'vue'
 import { addPokemon } from '../utils/wishlist'
 import type { WishlistItem } from '../utils/wishlist'
 import { rechercherPokemon as chercherPokemonAPI } from '../utils/pokemonApi'
+import {
+  sauvegarderWishlist,
+  chargerWishlist
+} from '../utils/wishlistStorage'
 
 // Variables
 const recherche = ref('')
@@ -11,11 +15,6 @@ const pokemon = ref<WishlistItem | null>(null)
 const erreur = ref('')
 const chargement = ref(false)
 const wishlist = ref<WishlistItem[]>([])
-
-// Sauvegarder la wishlist dans localStorage
-function sauvegarderWishlist(): void {
-  localStorage.setItem('wishlist', JSON.stringify(wishlist.value))
-}
 
 // Rechercher un Pokémon avec la PokéAPI
 async function rechercherPokemon(): Promise<void> {
@@ -53,7 +52,7 @@ function ajouterPokemon(): void {
   }
 
   erreur.value = ''
-  sauvegarderWishlist()
+  sauvegarderWishlist(wishlist.value)
 }
 
 // Supprimer un Pokémon de la wishlist
@@ -65,17 +64,11 @@ function supprimerPokemon(id: number): void {
     }
   }
 
-  sauvegarderWishlist()
+  sauvegarderWishlist(wishlist.value) 
 }
 
 // Charger la wishlist au démarrage
-onMounted(() => {
-  const sauvegarde = localStorage.getItem('wishlist')
-
-  if (sauvegarde) {
-    wishlist.value = JSON.parse(sauvegarde) as WishlistItem[]
-  }
-})
+sauvegarderWishlist(wishlist.value)
 </script>
 
 <template>
