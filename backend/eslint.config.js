@@ -13,7 +13,7 @@ export default [
     rules: {
       // 'error' = la commande lint échoue si la règle est violée
       'no-console': 'error',
-      'no-debugger': 'error'
-    }
-  }
+      'no-debugger': 'error',
+    },
+  },
 ]
