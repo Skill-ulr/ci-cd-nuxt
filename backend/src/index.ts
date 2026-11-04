@@ -1,7 +1,9 @@
+// Doit être le PREMIER import : il charge le fichier .env avant tout le reste
+import 'dotenv/config'
 import { serve } from '@hono/node-server'
 import { app } from './app.js'
 
 serve({
   fetch: app.fetch,
-  port: 3001, // 3000 est pris par Nuxt, le backend passe sur 3001
+  port: 3001,
 })

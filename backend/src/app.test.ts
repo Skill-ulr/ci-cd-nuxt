@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { app, resetWishlist } from './app.js'
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
+import { readFileSync } from 'node:fs'
+import { app } from './app.js'
+import { pool } from './db.js'
 
-// Petite fonction pour éviter de répéter le même code dans chaque test
+// Envoie un POST /wishlist (évite de répéter le même code dans chaque test)
 async function ajouterPokemon(id: number, name: string) {
   return app.request('/wishlist', {
     method: 'POST',
@@ -10,32 +12,78 @@ async function ajouterPokemon(id: number, name: string) {
   })
 }
 
-describe('Routes PokéWishlist', () => {
-  // Avant chaque test, on vide la wishlist pour que les tests ne s'influencent pas
-  beforeEach(() => {
-    resetWishlist()
+describe('PokéWishlist avec une vraie base PostgreSQL', () => {
+  // Une seule fois, avant tous les tests
+  beforeAll(async () => {
+    // Sécurité : on refuse de tourner sur autre chose que la base locale
+    const url = process.env.DATABASE_URL || ''
+    if (!url.includes('localhost')) {
+      throw new Error('Les tests ne doivent tourner que sur la base locale')
+    }
+
+    // On crée la table avec le même init.sql que Supabase
+    const initSql = readFileSync(
+      new URL('../sql/init.sql', import.meta.url),
+      'utf-8',
+    )
+    await pool.query(initSql)
   })
 
-  it('GET /wishlist retourne 200 et un tableau', async () => {
+  // Avant CHAQUE test : on vide la table pour repartir de zéro (nettoyage)
+  beforeEach(async () => {
+    await pool.query('DELETE FROM wishlist')
+  })
+
+  // Une seule fois, après tous les tests : on ferme les connexions
+  afterAll(async () => {
+    await pool.end()
+  })
+
+  it('GET /wishlist retourne 200 et une liste vide au départ', async () => {
     const response = await app.request('/wishlist')
 
     expect(response.status).toBe(200)
-    expect(Array.isArray(await response.json())).toBe(true)
+    expect(await response.json()).toEqual([])
   })
 
-  it('POST /wishlist ajoute un Pokémon et retourne 201', async () => {
+  it('POST /wishlist retourne 201 et le Pokémon', async () => {
     const response = await ajouterPokemon(25, 'Pikachu')
 
     expect(response.status).toBe(201)
     expect(await response.json()).toEqual({ id: 25, name: 'Pikachu' })
   })
 
-  it('DELETE /wishlist/:id retourne 200 quand le Pokémon existe', async () => {
-    await ajouterPokemon(999, 'Testmon')
+  it('POST /wishlist écrit vraiment dans la base', async () => {
+    await ajouterPokemon(25, 'Pikachu')
 
-    const response = await app.request('/wishlist/999', { method: 'DELETE' })
+    // On interroge la base directement, sans passer par l'API
+    const resultat = await pool.query(
+      'SELECT * FROM wishlist WHERE id = $1',
+      [25],
+    )
 
+    expect(resultat.rows.length).toBe(1)
+    expect(resultat.rows[0].name).toBe('Pikachu')
+  })
+
+  it('GET /wishlist retourne les Pokémon ajoutés', async () => {
+    await ajouterPokemon(25, 'Pikachu')
+    await ajouterPokemon(1, 'Bulbasaur')
+
+    const response = await app.request('/wishlist')
+    const liste = await response.json()
+
+    expect(liste.length).toBe(2)
+  })
+
+  it('DELETE /wishlist/:id retourne 200 et supprime de la base', async () => {
+    await ajouterPokemon(25, 'Pikachu')
+
+    const response = await app.request('/wishlist/25', { method: 'DELETE' })
     expect(response.status).toBe(200)
+
+    const resultat = await pool.query('SELECT * FROM wishlist')
+    expect(resultat.rows.length).toBe(0)
   })
 
   it('DELETE /wishlist/:id retourne 404 si le Pokémon est absent', async () => {
@@ -43,43 +91,47 @@ describe('Routes PokéWishlist', () => {
 
     expect(response.status).toBe(404)
   })
-})
 
-describe('Règles métier PokéWishlist', () => {
-  beforeEach(() => {
-    resetWishlist()
+  it('DELETE /wishlist/:id retourne 404 si id n est pas un nombre', async () => {
+    const response = await app.request('/wishlist/abc', { method: 'DELETE' })
+
+    expect(response.status).toBe(404)
   })
 
-  it('refuse un doublon (409)', async () => {
+  it('refuse un doublon (409) et ne crée qu une ligne', async () => {
     await ajouterPokemon(25, 'Pikachu')
 
     const response = await ajouterPokemon(25, 'Pikachu')
-
     expect(response.status).toBe(409)
+
+    const resultat = await pool.query('SELECT * FROM wishlist')
+    expect(resultat.rows.length).toBe(1)
   })
 
   it('refuse un 7e Pokémon (limite de 6)', async () => {
-    // On ajoute 6 Pokémon avec une boucle classique
+    // Boucle classique : on ajoute 6 Pokémon
     for (let i = 1; i <= 6; i++) {
       await ajouterPokemon(i, 'Pokemon' + i)
     }
 
     const response = await ajouterPokemon(7, 'Pokemon7')
-
     expect(response.status).toBe(400)
+
+    const resultat = await pool.query('SELECT * FROM wishlist')
+    expect(resultat.rows.length).toBe(6)
   })
 
   it('refuse une entrée invalide : nom manquant (400)', async () => {
     const response = await app.request('/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: 25 }), // pas de "name"
+      body: JSON.stringify({ id: 25 }),
     })
 
     expect(response.status).toBe(400)
   })
 
-  it("refuse une entrée invalide : id qui n'est pas un nombre (400)", async () => {
+  it('refuse une entrée invalide : id qui n est pas un nombre (400)', async () => {
     const response = await app.request('/wishlist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -89,13 +141,13 @@ describe('Règles métier PokéWishlist', () => {
     expect(response.status).toBe(400)
   })
 
-  it('supprime vraiment le Pokémon de la liste', async () => {
-    await ajouterPokemon(25, 'Pikachu')
-    await app.request('/wishlist/25', { method: 'DELETE' })
+  it('refuse un corps qui n est pas du JSON (400)', async () => {
+    const response = await app.request('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: 'ceci n est pas du json',
+    })
 
-    // On relit la liste : elle doit être vide
-    const response = await app.request('/wishlist')
-
-    expect(await response.json()).toEqual([])
+    expect(response.status).toBe(400)
   })
 })
