@@ -1,67 +1,108 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
+import { pool } from './db.js'
+import { choisirLangue, messages } from './i18n.js'
 
 type Pokemon = {
   id: number
   name: string
+  image?: string | null
 }
 
 const app = new Hono()
 
-// Limite de Pokémon dans la wishlist (règle métier)
-const MAX_POKEMON = 7
+// Autorise le frontend (autre port) à appeler l'API
+app.use('/*', cors())
 
-// Tableau temporaire en mémoire
-const wishlist: Pokemon[] = []
+const MAX_POKEMON = 6
 
-// Vide la wishlist : utile pour repartir de zéro dans chaque test
-function resetWishlist() {
-  wishlist.length = 0 // mettre length à 0 vide le tableau sans le recréer
-}
-
-app.get('/wishlist', (c) => {
-  return c.json(wishlist, 200)
+// Si une erreur imprévue arrive (base inaccessible...), on répond 500 en JSON
+app.onError((erreur, c) => {
+  // eslint-disable-next-line no-console
+  console.error(erreur)
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
+  return c.json({ message: m.serverError }, 500)
 })
 
+// Route simple pour vérifier que l'API tourne
+app.get('/health', (c) => {
+  return c.json({ status: 'ok' }, 200)
+})
+
+// GET : lire la wishlist dans la base
+app.get('/wishlist', async (c) => {
+  const resultat = await pool.query(
+    'SELECT id, name, image FROM wishlist ORDER BY created_at',
+  )
+  return c.json(resultat.rows, 200)
+})
+
+// POST : ajouter un Pokémon
 app.post('/wishlist', async (c) => {
+  // m = tous les messages dans la langue demandée par le client
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
   let pokemon: Pokemon
 
-  // Si le corps de la requête n'est pas du JSON valide, on renvoie 400
   try {
     pokemon = await c.req.json<Pokemon>()
   } catch {
-    return c.json({ message: 'JSON invalide' }, 400)
+    return c.json({ message: m.invalidJson }, 400)
   }
 
-  // Règle 1 : entrée invalide (id doit être un nombre, name un texte non vide)
-  if (!pokemon || typeof pokemon.id !== 'number' || typeof pokemon.name !== 'string' || pokemon.name.trim() === '') {
-    return c.json({ message: 'Pokémon invalide' }, 400)
+  // Règle 1 : entrée invalide
+  if (
+    !pokemon ||
+    typeof pokemon.id !== 'number' ||
+    typeof pokemon.name !== 'string' ||
+    pokemon.name.trim() === ''
+  ) {
+    return c.json({ message: m.invalidPokemon }, 400)
   }
 
-  // Règle 2 : pas de doublon (même id déjà présent)
-  const dejaPresent = wishlist.some((p) => p.id === pokemon.id)
-  if (dejaPresent) {
-    return c.json({ message: 'Pokémon déjà dans la wishlist' }, 409)
+  // Règle 2 : pas de doublon
+  const existe = await pool.query('SELECT id FROM wishlist WHERE id = $1', [
+    pokemon.id,
+  ])
+  if (existe.rows.length > 0) {
+    return c.json({ message: m.duplicate }, 409)
   }
 
   // Règle 3 : maximum 6 Pokémon
-  if (wishlist.length >= MAX_POKEMON) {
-    return c.json({ message: 'Wishlist pleine (6 maximum)' }, 400)
+  const compte = await pool.query('SELECT COUNT(*)::int AS total FROM wishlist')
+  if (compte.rows[0].total >= MAX_POKEMON) {
+    return c.json({ message: m.full }, 400)
   }
 
-  wishlist.push(pokemon)
+  // L'image est facultative : sans image, on enregistre null (vide)
+  let image: string | null = null
+  if (pokemon.image) {
+    image = pokemon.image
+  }
+
+  await pool.query(
+    'INSERT INTO wishlist (id, name, image) VALUES ($1, $2, $3)',
+    [pokemon.id, pokemon.name, image],
+  )
+
   return c.json(pokemon, 201)
 })
 
-app.delete('/wishlist/:id', (c) => {
+// DELETE : supprimer un Pokémon
+app.delete('/wishlist/:id', async (c) => {
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
   const id = Number(c.req.param('id'))
-  const index = wishlist.findIndex((pokemon) => pokemon.id === id)
 
-  if (index === -1) {
-    return c.json({ message: 'Pokémon introuvable' }, 404)
+  if (Number.isNaN(id)) {
+    return c.json({ message: m.notFound }, 404)
   }
 
-  wishlist.splice(index, 1) // supprime 1 élément à la position index
-  return c.json({ message: 'Pokémon supprimé' }, 200)
+  const resultat = await pool.query('DELETE FROM wishlist WHERE id = $1', [id])
+
+  if (resultat.rowCount === 0) {
+    return c.json({ message: m.notFound }, 404)
+  }
+
+  return c.json({ message: m.deleted }, 200)
 })
 
-export { app, resetWishlist }
+export { app }
