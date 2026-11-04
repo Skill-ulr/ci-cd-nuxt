@@ -5,4 +5,3 @@ serve({
   fetch: app.fetch,
   port: 3001, // 3000 est pris par Nuxt, le backend passe sur 3001
 })
-console.log('test')
