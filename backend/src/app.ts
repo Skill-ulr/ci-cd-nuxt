@@ -13,7 +13,7 @@ const app = new Hono()
 // Autorise le frontend (autre port) à appeler l'API
 app.use('/*', cors())
 
-const MAX_POKEMON = 7
+const MAX_POKEMON = 6
 
 // Si une erreur imprévue arrive (base inaccessible...), on répond 500 en JSON
 app.onError((erreur, c) => {
