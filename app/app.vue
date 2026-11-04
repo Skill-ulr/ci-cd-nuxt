@@ -126,7 +126,7 @@ async function supprimerPokemon(id: number): Promise<void> {
 
           <h3>{{ element.name }}</h3>
 
-          <button @click="supprimerPokemon(element.id)">Supprimer</button>
+          <button @click="supprimerPokemon(element.id)">Retirer</button>
         </div>
       </div>
     </section>
