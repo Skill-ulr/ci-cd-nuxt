@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { addPokemon } from '../utils/wishlist'
 import type { WishlistItem } from '../utils/wishlist'
 import { rechercherPokemon as chercherPokemonAPI } from '../utils/pokemonApi'
-import { sauvegarderWishlist, chargerWishlist } from '../utils/wishlistStorage'
-
-onMounted(() => {
-  wishlist.value = chargerWishlist()
-})
+import {
+  chargerWishlistApi,
+  ajouterPokemonApi,
+  supprimerPokemonApi,
+} from '../utils/wishlistApi'
 
 // Variables
 const recherche = ref('')
@@ -16,7 +15,17 @@ const erreur = ref('')
 const chargement = ref(false)
 const wishlist = ref<WishlistItem[]>([])
 
-// Rechercher un Pokémon avec la PokéAPI
+// Au chargement de la page : on récupère la wishlist depuis le backend
+// "async" permet d'utiliser "await" pour attendre la réponse du serveur
+onMounted(async () => {
+  try {
+    wishlist.value = await chargerWishlistApi()
+  } catch {
+    erreur.value = 'Impossible de contacter le serveur.'
+  }
+})
+
+// Rechercher un Pokémon avec la PokéAPI (inchangé)
 async function rechercherPokemon(): Promise<void> {
   chargement.value = true
   erreur.value = ''
@@ -31,32 +40,37 @@ async function rechercherPokemon(): Promise<void> {
   }
 }
 
-// Ajouter un Pokémon à la wishlist
-function ajouterPokemon(): void {
+// Ajouter un Pokémon : c'est maintenant le backend qui vérifie les règles
+async function ajouterPokemon(): Promise<void> {
   if (pokemon.value === null) {
     return
   }
 
-  if (wishlist.value.length >= 6) {
-    erreur.value = 'Ta wishlist contient déjà 6 Pokémon.'
-    return
+  try {
+    // Le backend refuse si doublon (409) ou si la liste est pleine (400)
+    const ajoute = await ajouterPokemonApi(pokemon.value)
+    wishlist.value.push(ajoute) // on ajoute aussi dans la liste affichée
+    erreur.value = ''
+  } catch (e) {
+    // e instanceof Error vérifie que e est bien une erreur avec un message
+    if (e instanceof Error) {
+      erreur.value = e.message // message envoyé par le backend
+    } else {
+      erreur.value = "Impossible d'ajouter le Pokémon."
+    }
   }
-
-  const ancienneLongueur = wishlist.value.length
-
-  wishlist.value = addPokemon(wishlist.value, pokemon.value)
-
-  if (wishlist.value.length === ancienneLongueur) {
-    erreur.value = 'Ce Pokémon est déjà dans ta wishlist.'
-    return
-  }
-
-  erreur.value = ''
-  sauvegarderWishlist(wishlist.value)
 }
 
-// Supprimer un Pokémon de la wishlist
-function supprimerPokemon(id: number): void {
+// Supprimer un Pokémon : d'abord côté backend, ensuite dans la liste affichée
+async function supprimerPokemon(id: number): Promise<void> {
+  try {
+    await supprimerPokemonApi(id)
+  } catch {
+    erreur.value = 'Impossible de supprimer le Pokémon.'
+    return // on s'arrête : le backend n'a pas supprimé
+  }
+
+  // Même boucle qu'avant pour retirer le Pokémon de la liste affichée
   for (let i = 0; i < wishlist.value.length; i++) {
     if (wishlist.value[i]?.id === id) {
       wishlist.value.splice(i, 1)
@@ -64,11 +78,8 @@ function supprimerPokemon(id: number): void {
     }
   }
 
-  sauvegarderWishlist(wishlist.value)
+  erreur.value = ''
 }
-
-// Charger la wishlist au démarrage
-sauvegarderWishlist(wishlist.value)
 </script>
 
 <template>

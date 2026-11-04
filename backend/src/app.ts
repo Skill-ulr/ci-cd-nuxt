@@ -1,11 +1,17 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 
 type Pokemon = {
   id: number
   name: string
+  image?: string | null // le ? veut dire "champ facultatif"
 }
 
 const app = new Hono()
+
+// Autorise le frontend (autre port) à appeler cette API
+// Sans paramètre, cors() accepte toutes les origines : suffisant pour ce TP
+app.use('/*', cors())
 
 // Limite de Pokémon dans la wishlist (règle métier)
 const MAX_POKEMON = 6

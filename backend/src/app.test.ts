@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { app, resetWishlist } from './app.js'
 
+
 // Petite fonction pour éviter de répéter le même code dans chaque test
 async function ajouterPokemon(id: number, name: string) {
   return app.request('/wishlist', {
