@@ -51,7 +51,7 @@ app.post('/wishlist', async (c) => {
   // Règle 2 : pas de doublon (même id déjà présent)
   const dejaPresent = wishlist.some((p) => p.id === pokemon.id)
   if (dejaPresent) {
-    return c.json({ message: 'Doublon' }, 409)
+    return c.json({ message: 'Pokémon déjà dans la wishlist' }, 409)
   }
 
   // Règle 3 : maximum 6 Pokémon
