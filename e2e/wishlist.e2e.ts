@@ -50,3 +50,25 @@ test('parcours complet : rechercher, ajouter, recharger, supprimer', async ({
     page.getByText('Aucun Pokémon dans ta wishlist pour le moment.'),
   ).toBeVisible()
 })
+
+test('refuse un 7e Pokémon (limite de 6)', async ({ page, request }) => {
+  // On remplit la wishlist avec 6 Pokémon directement via l'API (plus rapide que par l'interface)
+  for (let i = 1; i <= 6; i++) {
+    await request.post(API + '/wishlist', {
+      data: { id: i, name: 'pokemon' + i, image: null }
+    })
+  }
+
+  // On ouvre la page : elle charge la wishlist pleine depuis le backend
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+  await expect(page.getByText('Ma wishlist (6/6)')).toBeVisible()
+
+  // On essaie d'ajouter un 7e Pokémon (Pikachu, id 25, absent de la liste)
+  await page.getByPlaceholder("Nom d'un Pokémon...").fill('pikachu')
+  await page.getByRole('button', { name: 'Rechercher' }).click()
+  await page.getByRole('button', { name: 'Ajouter à ma wishlist' }).click()
+
+  // Le message d'erreur envoyé par le backend doit s'afficher
+  await expect(page.getByText('Wishlist pleine (6 maximum)')).toBeVisible()
+})
