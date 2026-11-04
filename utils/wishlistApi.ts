@@ -3,11 +3,15 @@ import type { WishlistItem } from './wishlist'
 // Adresse du backend Hono
 const API_URL = 'http://localhost:3001'
 
-// GET : récupérer la wishlist depuis le backend
-export async function chargerWishlistApi(): Promise<WishlistItem[]> {
-  const reponse = await fetch(API_URL + '/wishlist')
+// GET : récupérer la wishlist
+export async function chargerWishlistApi(
+  langue: string,
+): Promise<WishlistItem[]> {
+  const reponse = await fetch(API_URL + '/wishlist', {
+    // Accept-Language dit au backend dans quelle langue répondre
+    headers: { 'Accept-Language': langue },
+  })
 
-  // reponse.ok vaut true si le statut est 200 à 299
   if (!reponse.ok) {
     throw new Error('Impossible de charger la wishlist')
   }
@@ -15,17 +19,21 @@ export async function chargerWishlistApi(): Promise<WishlistItem[]> {
   return await reponse.json()
 }
 
-// POST : ajouter un Pokémon, le backend vérifie les règles (doublon, limite de 6)
+// POST : ajouter un Pokémon (le backend vérifie doublon et limite de 6)
 export async function ajouterPokemonApi(
   pokemon: WishlistItem,
+  langue: string,
 ): Promise<WishlistItem> {
   const reponse = await fetch(API_URL + '/wishlist', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(pokemon), // transforme l'objet en texte JSON
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept-Language': langue,
+    },
+    body: JSON.stringify(pokemon),
   })
 
-  // Si le backend refuse (409 doublon, 400 liste pleine), on récupère son message
+  // Si le backend refuse, on récupère son message (déjà dans la bonne langue)
   if (!reponse.ok) {
     const erreur = await reponse.json()
     throw new Error(erreur.message)
@@ -35,8 +43,14 @@ export async function ajouterPokemonApi(
 }
 
 // DELETE : supprimer un Pokémon par son id
-export async function supprimerPokemonApi(id: number): Promise<void> {
-  const reponse = await fetch(API_URL + '/wishlist/' + id, { method: 'DELETE' })
+export async function supprimerPokemonApi(
+  id: number,
+  langue: string,
+): Promise<void> {
+  const reponse = await fetch(API_URL + '/wishlist/' + id, {
+    method: 'DELETE',
+    headers: { 'Accept-Language': langue },
+  })
 
   if (!reponse.ok) {
     throw new Error('Impossible de supprimer le Pokémon')

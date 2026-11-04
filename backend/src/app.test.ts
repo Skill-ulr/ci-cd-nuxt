@@ -150,4 +150,46 @@ describe('PokéWishlist avec une vraie base PostgreSQL', () => {
 
     expect(response.status).toBe(400)
   })
+  it('répond en français avec Accept-Language: fr', async () => {
+    await ajouterPokemon(25, 'Pikachu')
+
+    const response = await app.request('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept-Language': 'fr' },
+      body: JSON.stringify({ id: 25, name: 'Pikachu' }),
+    })
+
+    expect(response.status).toBe(409)
+    expect(await response.json()).toEqual({
+      message: 'Pokémon déjà dans la wishlist',
+    })
+  })
+
+  it('répond en espagnol avec Accept-Language: es', async () => {
+    await ajouterPokemon(25, 'Pikachu')
+
+    const response = await app.request('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept-Language': 'es' },
+      body: JSON.stringify({ id: 25, name: 'Pikachu' }),
+    })
+
+    expect(await response.json()).toEqual({
+      message: 'El Pokémon ya está en la lista de deseos',
+    })
+  })
+
+  it('répond en anglais si la langue est inconnue (ja)', async () => {
+    await ajouterPokemon(25, 'Pikachu')
+
+    const response = await app.request('/wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept-Language': 'ja' },
+      body: JSON.stringify({ id: 25, name: 'Pikachu' }),
+    })
+
+    expect(await response.json()).toEqual({
+      message: 'Pokémon already in the wishlist',
+    })
+  })
 })

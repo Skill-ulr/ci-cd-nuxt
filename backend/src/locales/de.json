@@ -1,0 +1,9 @@
+{
+  "invalidJson": "Ungültiges JSON",
+  "invalidPokemon": "Ungültiges Pokémon",
+  "duplicate": "Pokémon ist bereits auf der Wunschliste",
+  "full": "Wunschliste ist voll (maximal 6)",
+  "notFound": "Pokémon nicht gefunden",
+  "deleted": "Pokémon gelöscht",
+  "serverError": "Serverfehler"
+}

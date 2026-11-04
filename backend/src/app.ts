@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { pool } from './db.js'
+import { choisirLangue, messages } from './i18n.js'
 
 type Pokemon = {
   id: number
@@ -19,10 +20,11 @@ const MAX_POKEMON = 6
 app.onError((erreur, c) => {
   // eslint-disable-next-line no-console
   console.error(erreur)
-  return c.json({ message: 'Erreur serveur' }, 500)
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
+  return c.json({ message: m.serverError }, 500)
 })
 
-// Route simple pour vérifier que l'API tourne (utile pour AWS plus tard)
+// Route simple pour vérifier que l'API tourne
 app.get('/health', (c) => {
   return c.json({ status: 'ok' }, 200)
 })
@@ -32,18 +34,19 @@ app.get('/wishlist', async (c) => {
   const resultat = await pool.query(
     'SELECT id, name, image FROM wishlist ORDER BY created_at',
   )
-  // resultat.rows = le tableau des lignes trouvées
   return c.json(resultat.rows, 200)
 })
 
 // POST : ajouter un Pokémon
 app.post('/wishlist', async (c) => {
+  // m = tous les messages dans la langue demandée par le client
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
   let pokemon: Pokemon
 
   try {
     pokemon = await c.req.json<Pokemon>()
   } catch {
-    return c.json({ message: 'JSON invalide' }, 400)
+    return c.json({ message: m.invalidJson }, 400)
   }
 
   // Règle 1 : entrée invalide
@@ -53,23 +56,21 @@ app.post('/wishlist', async (c) => {
     typeof pokemon.name !== 'string' ||
     pokemon.name.trim() === ''
   ) {
-    return c.json({ message: 'Pokémon invalide' }, 400)
+    return c.json({ message: m.invalidPokemon }, 400)
   }
 
   // Règle 2 : pas de doublon
-  // $1 est remplacé par la valeur du tableau [pokemon.id] : requête paramétrée
   const existe = await pool.query('SELECT id FROM wishlist WHERE id = $1', [
     pokemon.id,
   ])
   if (existe.rows.length > 0) {
-    return c.json({ message: 'Pokémon déjà dans la wishlist' }, 409)
+    return c.json({ message: m.duplicate }, 409)
   }
 
   // Règle 3 : maximum 6 Pokémon
-  // ::int transforme le résultat de COUNT en nombre (sinon il arrive en texte)
   const compte = await pool.query('SELECT COUNT(*)::int AS total FROM wishlist')
   if (compte.rows[0].total >= MAX_POKEMON) {
-    return c.json({ message: 'Wishlist pleine (6 maximum)' }, 400)
+    return c.json({ message: m.full }, 400)
   }
 
   // L'image est facultative : sans image, on enregistre null (vide)
@@ -88,21 +89,20 @@ app.post('/wishlist', async (c) => {
 
 // DELETE : supprimer un Pokémon
 app.delete('/wishlist/:id', async (c) => {
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
   const id = Number(c.req.param('id'))
 
-  // Si l'id n'est pas un nombre (ex : /wishlist/abc), le Pokémon n'existe pas
   if (Number.isNaN(id)) {
-    return c.json({ message: 'Pokémon introuvable' }, 404)
+    return c.json({ message: m.notFound }, 404)
   }
 
   const resultat = await pool.query('DELETE FROM wishlist WHERE id = $1', [id])
 
-  // rowCount = nombre de lignes supprimées : 0 veut dire "rien trouvé"
   if (resultat.rowCount === 0) {
-    return c.json({ message: 'Pokémon introuvable' }, 404)
+    return c.json({ message: m.notFound }, 404)
   }
 
-  return c.json({ message: 'Pokémon supprimé' }, 200)
+  return c.json({ message: m.deleted }, 200)
 })
 
 export { app }

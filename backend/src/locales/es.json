@@ -1,0 +1,9 @@
+{
+  "invalidJson": "JSON no válido",
+  "invalidPokemon": "Pokémon no válido",
+  "duplicate": "El Pokémon ya está en la lista de deseos",
+  "full": "La lista de deseos está llena (máximo 6)",
+  "notFound": "Pokémon no encontrado",
+  "deleted": "Pokémon eliminado",
+  "serverError": "Error del servidor"
+}
