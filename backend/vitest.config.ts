@@ -8,9 +8,9 @@ export default defineConfig({
     env: {
       DATABASE_URL:
         process.env.TEST_DATABASE_URL ||
-        'postgresql://postgres:test@localhost:5433/pokewishlist_test'
+        'postgresql://postgres:test@localhost:5433/pokewishlist_test',
     },
     // Un seul fichier de test à la fois : ils partagent la même base
-    fileParallelism: false
-  }
+    fileParallelism: false,
+  },
 })
