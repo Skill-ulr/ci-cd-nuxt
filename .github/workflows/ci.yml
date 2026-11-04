@@ -22,10 +22,16 @@ jobs:
         with:
           node-version: 24
 
-      # FRONTEND NUXT
+      # INSTALLATION DES DEPENDANCES (frontend ET backend, avant tout le reste)
       - name: Installer les dependances
         run: npm ci
 
+      # DEPLACE ICI : le lint de la racine a besoin des paquets du backend
+      - name: Installer les dependances du backend
+        run: npm ci
+        working-directory: backend
+
+      # FRONTEND NUXT
       - name: Verifier le code avec ESLint
         run: npm run lint
 
@@ -39,10 +45,6 @@ jobs:
         run: npm run build
 
       # BACKEND HONO
-      - name: Installer les dependances du backend
-        run: npm ci
-        working-directory: backend
-
       - name: Verifier le code backend avec ESLint
         run: npm run lint
         working-directory: backend
