@@ -43,11 +43,29 @@ jobs:
         run: npm ci
         working-directory: backend
 
+      - name: Verifier le code backend avec ESLint
+        run: npm run lint
+        working-directory: backend
+
+      - name: Verifier le formatage backend avec Prettier
+        run: npm run format:check
+        working-directory: backend
+
+      - name: Verifier les types TypeScript du backend
+        run: npm run typecheck
+        working-directory: backend
+
       - name: Build du backend Hono
         run: npm run build
         working-directory: backend
 
-      # NOUVEAU : si un test échoue, cette étape devient rouge et la CI échoue
       - name: Tests backend Hono
         run: npm run test
         working-directory: backend
+
+      # E2E : test du parcours complet dans un vrai navigateur
+      - name: Installer le navigateur Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Tests E2E Playwright
+        run: npm run test:e2e
