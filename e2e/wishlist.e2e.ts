@@ -55,7 +55,7 @@ test('refuse un 7e Pokémon (limite de 6)', async ({ page, request }) => {
   // On remplit la wishlist avec 6 Pokémon directement via l'API (plus rapide que par l'interface)
   for (let i = 1; i <= 6; i++) {
     await request.post(API + '/wishlist', {
-      data: { id: i, name: 'pokemon' + i, image: null }
+      data: { id: i, name: 'pokemon' + i, image: null },
     })
   }
 
