@@ -8,7 +8,6 @@
   "viewSheet": "Ver ficha",
   "wishlistTitle": "Mi lista de deseos",
   "emptyWishlist": "Todavía no hay Pokémon en tu lista de deseos.",
-  "deleteButton": "Eliminar",
   "errorSearch": "Pokémon no encontrado. Comprueba su nombre.",
   "errorServer": "No se puede contactar con el servidor.",
   "errorAdd": "No se puede añadir el Pokémon.",
