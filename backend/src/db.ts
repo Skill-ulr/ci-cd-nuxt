@@ -23,4 +23,5 @@ if (databaseUrl.includes('localhost')) {
 export const pool = new Pool({
   connectionString: databaseUrl,
   ssl: ssl,
+  max: Number(process.env.DB_POOL_MAX || 5), // nombre max de connexions
 })
