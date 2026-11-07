@@ -1,0 +1,63 @@
+name: CD Backend Lambda
+
+# Se lance quand le workflow "CI Nuxt" se termine sur la branche main
+on:
+  workflow_run:
+    workflows:
+      - CI Nuxt
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # On ne deploie que si la CI est VERTE (success)
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      # On recupere exactement le code qui a passe la CI
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Installer les dependances du backend
+        run: npm ci
+        working-directory: backend
+
+      # Cree backend/dist/lambda/index.cjs (un seul fichier)
+      - name: Construire le paquet Lambda
+        run: npm run build:lambda
+        working-directory: backend
+
+      # Met index.cjs dans un zip
+      - name: Creer le zip
+        run: zip ../lambda.zip index.cjs
+        working-directory: backend/dist/lambda
+
+      # Les cles viennent des secrets GitHub, jamais ecrites dans le code
+      - name: Se connecter a AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Envoyer le code a Lambda
+        run: >-
+          aws lambda update-function-code
+          --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+          --zip-file fileb://backend/dist/lambda.zip
+
+      # Attend que la mise a jour soit terminee
+      - name: Attendre la fin de la mise a jour
+        run: >-
+          aws lambda wait function-updated
+          --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
