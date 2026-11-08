@@ -13,7 +13,8 @@
     "typecheck": "nuxt typecheck",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "check:i18n": "node scripts/check-translations.mjs"
+    "check:i18n": "node scripts/check-translations.mjs",
+    "smoke": "node scripts/smoke-test.mjs all"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",

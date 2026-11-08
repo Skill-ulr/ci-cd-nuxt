@@ -60,3 +60,9 @@ jobs:
           aws cloudfront create-invalidation
           --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
           --paths /*
+
+      # Verifie que le site statique repond apres le deploiement
+      - name: Smoke test du site SSG
+        run: node scripts/smoke-test.mjs ssg
+        env:
+          SSG_URL: http://pokewishlist-ulrich-ssg-237.s3-website.eu-north-1.amazonaws.com
