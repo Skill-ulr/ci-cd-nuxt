@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "check:i18n": "node scripts/check-translations.mjs",
     "smoke": "node scripts/smoke-test.mjs all",
-    "seo": "node scripts/seo-check.mjs"
+    "seo": "node scripts/seo-check.mjs",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text --coverage.reporter=json-summary --coverage.reporter=html --coverage.include=utils/**/*.ts --coverage.exclude=**/*.test.ts"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@types/node": "^24.19.2",
+    "@vitest/coverage-v8": "^5.1.0",
     "prettier": "^3.9.10",
     "typescript": "^6.0.3",
     "vitest": "^5.1.0",

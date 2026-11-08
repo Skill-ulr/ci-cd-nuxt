@@ -27,3 +27,8 @@ test-results
 playwright-report
 docs-ia/
 
+
+# Rapports de couverture (generes)
+coverage
+backend/coverage
+coverage-badge.svg

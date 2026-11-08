@@ -1,5 +1,9 @@
 # Nuxt Minimal Starter
 
+![Couverture des tests](https://raw.githubusercontent.com/Skill-ulr/ci-cd-nuxt/badges/coverage-badge.svg)
+
+Taux de couverture des tests (front + backend). Le rapport détaillé est dans le résumé du dernier run de la CI (onglet Actions) et dans l'artefact `rapport-couverture`.
+
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
 ## Setup

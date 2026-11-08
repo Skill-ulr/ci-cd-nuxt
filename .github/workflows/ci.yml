@@ -13,6 +13,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # contents: write sert à publier le badge sur la branche badges
+    permissions:
+      contents: write
+
     # NOUVEAU : GitHub démarre un PostgreSQL de test à côté de la CI
     services:
       postgres:
@@ -100,8 +104,35 @@ jobs:
         working-directory: backend
 
       - name: Tests backend Hono
-        run: npm run test
+        run: npm run test:coverage
         working-directory: backend
+
+      # COUVERTURE DES TESTS
+      - name: Tests unitaires du frontend avec couverture
+        run: npm run test:coverage
+
+      - name: Resume de la couverture et badge
+        run: node scripts/coverage-summary.mjs
+
+      - name: Publier le rapport de couverture
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-couverture
+          path: |
+            coverage
+            backend/coverage
+
+      # Le badge est publie seulement apres un push sur main
+      - name: Publier le badge sur la branche badges
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email github-actions[bot]@users.noreply.github.com
+          git checkout --orphan badges
+          git rm -rf --cached . -q
+          git add -f coverage-badge.svg
+          git commit -m "Badge de couverture"
+          git push --force origin badges
 
       # E2E : test du parcours complet dans un vrai navigateur
       - name: Installer le navigateur Playwright
