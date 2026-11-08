@@ -41,6 +41,8 @@ jobs:
       # Construit le site comme le ferait Vercel
       - name: Construire le site
         run: npx vercel build --prod
+        env:
+          NITRO_PRESET: vercel
 
       # Envoie le resultat en production
       - name: Deployer en production
