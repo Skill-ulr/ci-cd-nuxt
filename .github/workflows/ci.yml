@@ -55,6 +55,20 @@ jobs:
         env:
           PGPASSWORD: test
 
+      # Applique les migrations SQL (table likes) sur la base de test
+      - name: Appliquer les migrations
+        run: npm run migrate
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5433/pokewishlist_test
+
+      # Applique les migrations SQL (table likes) sur la base de test
+      - name: Appliquer les migrations
+        run: npm run migrate
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5433/pokewishlist_test
+
       # FRONTEND NUXT
       - name: Verifier le code avec ESLint
         run: npm run lint

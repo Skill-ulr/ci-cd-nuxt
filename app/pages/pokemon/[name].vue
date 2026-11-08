@@ -1,43 +1,75 @@
 <script setup lang="ts">
 import { recupererFichePokemon } from '../../../utils/pokemonDetails'
+import { chargerLikesApi, ajouterLikeApi } from '../../../utils/likesApi'
+
+const { t } = useTraduction()
 
 // useRoute (fourni par Nuxt) donne accès à l'adresse : route.params.name = "pikachu"
 const route = useRoute()
 const name = String(route.params.name)
 
 // useAsyncData charge la fiche côté serveur, avant d'afficher la page
-// Le premier paramètre est un identifiant unique pour ce chargement
 const { data: pokemon } = await useAsyncData('pokemon-' + name, () =>
   recupererFichePokemon(name),
 )
 
-// Pokémon introuvable : on affiche la page d'erreur 404 (vrai code HTTP 404)
+// Pokémon introuvable : page d'erreur 404 (vrai code HTTP 404)
 if (!pokemon.value) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Pokémon introuvable',
+    statusMessage: t('pokemonNotFound'),
     fatal: true,
   })
 }
 
 // Titre de l'onglet du navigateur
-useHead({ title: 'Fiche de ' + pokemon.value.name })
+useHead({ title: t('sheetTitle') + ' ' + pokemon.value.name })
+
+// Likes : chargés dans le navigateur (le site statique reste indépendant de l'API)
+const likes = ref(0)
+const erreurLike = ref('')
+
+onMounted(async () => {
+  try {
+    likes.value = await chargerLikesApi(name)
+  } catch {
+    erreurLike.value = t('errorServer')
+  }
+})
+
+// Clic sur le bouton : le backend ajoute 1 et renvoie le nouveau total
+async function aimer() {
+  try {
+    likes.value = await ajouterLikeApi(name)
+    erreurLike.value = ''
+  } catch {
+    erreurLike.value = t('errorServer')
+  }
+}
 </script>
 
 <template>
   <main v-if="pokemon" class="container">
-    <NuxtLink to="/">← Retour à ma wishlist</NuxtLink>
+    <NuxtLink to="/">{{ t('backToWishlist') }}</NuxtLink>
 
-    <h1>{{ pokemon.name }} (n° {{ pokemon.id }})</h1>
+    <h1>{{ pokemon.name }} ({{ t('numberShort') }} {{ pokemon.id }})</h1>
 
     <img v-if="pokemon.image" :src="pokemon.image" :alt="pokemon.name" />
 
     <ul class="infos">
-      <li>Types : {{ pokemon.types.join(', ') }}</li>
-      <li>Taille : {{ pokemon.height }} m</li>
-      <li>Poids : {{ pokemon.weight }} kg</li>
-      <li>Capacités : {{ pokemon.abilities.join(', ') }}</li>
+      <li>{{ t('types') }} : {{ pokemon.types.join(', ') }}</li>
+      <li>{{ t('height') }} : {{ pokemon.height }} m</li>
+      <li>{{ t('weight') }} : {{ pokemon.weight }} kg</li>
+      <li>{{ t('abilities') }} : {{ pokemon.abilities.join(', ') }}</li>
     </ul>
+
+    <div class="likes">
+      <button type="button" @click="aimer">{{ t('likeButton') }}</button>
+      <p>
+        {{ t('likesLabel') }} : <strong data-testid="likes">{{ likes }}</strong>
+      </p>
+      <p v-if="erreurLike" class="erreur">{{ erreurLike }}</p>
+    </div>
   </main>
 </template>
 
@@ -66,5 +98,13 @@ img {
   padding: 0;
   text-align: left;
   display: inline-block;
+}
+
+.likes {
+  margin-top: 20px;
+}
+
+.erreur {
+  color: #e3350d;
 }
 </style>
