@@ -26,7 +26,7 @@ app.onError((erreur, c) => {
 
 // Route simple pour vérifier que l'API tourne
 app.get('/health', (c) => {
-  return c.json({ status: 'casse' }, 200)
+  return c.json({ status: 'ok' }, 200)
 })
 
 // GET : lire la wishlist dans la base
