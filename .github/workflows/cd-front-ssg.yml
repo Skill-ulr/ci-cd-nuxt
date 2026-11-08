@@ -1,0 +1,68 @@
+name: CD Front SSG S3
+
+# Se lance quand le workflow "CI Nuxt" se termine sur la branche main
+on:
+  workflow_run:
+    workflows:
+      - CI Nuxt
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # On ne deploie que si la CI est VERTE
+    if: github.event.workflow_run.conclusion == 'success'
+
+    # Vide tant que CloudFront n'est pas configure
+    env:
+      CF_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Installer les dependances
+        run: npm ci
+
+      # Genere le site statique dans .output/public (151 fiches Pokemon)
+      - name: Generer le site statique
+        run: npm run generate
+        env:
+          NUXT_PUBLIC_API_BASE: ${{ secrets.API_BASE_URL }}
+
+      - name: Se connecter a AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Copie les fichiers vers S3 ; --delete retire les fichiers disparus
+      - name: Synchroniser vers S3
+        run: >-
+          aws s3 sync .output/public s3://${{ secrets.S3_BUCKET_NAME }}
+          --delete
+
+      # Seulement si CLOUDFRONT_DISTRIBUTION_ID existe
+      - name: Invalider le cache CloudFront
+        if: env.CF_ID != ''
+        run: >-
+          aws cloudfront create-invalidation
+          --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+          --paths /*
+
+      # Verifie que le site statique repond apres le deploiement
+      - name: Smoke test du site SSG
+        run: node scripts/smoke-test.mjs ssg
+        env:
+          SSG_URL: http://pokewishlist-ulrich-ssg-237.s3-website.eu-north-1.amazonaws.com

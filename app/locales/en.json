@@ -21,5 +21,7 @@
   "weight": "Weight",
   "abilities": "Abilities",
   "pokemonNotFound": "Pokémon not found",
-  "backHome": "Back to home"
+  "backHome": "Back to home",
+  "likeButton": "Like this Pokémon",
+  "likesLabel": "Likes"
 }

@@ -105,4 +105,38 @@ app.delete('/wishlist/:id', async (c) => {
   return c.json({ message: m.deleted }, 200)
 })
 
+// GET : nombre de likes d'un Pokémon (0 s'il n'en a jamais eu)
+app.get('/likes/:name', async (c) => {
+  const name = c.req.param('name').toLowerCase()
+  const resultat = await pool.query(
+    'SELECT total FROM likes WHERE pokemon_name = $1',
+    [name],
+  )
+  let total = 0
+  if (resultat.rows.length > 0) {
+    total = resultat.rows[0].total
+  }
+  return c.json({ name, total }, 200)
+})
+
+// POST : ajouter un like (crée la ligne la première fois, puis ajoute 1)
+app.post('/likes/:name', async (c) => {
+  const m = messages(choisirLangue(c.req.header('Accept-Language')))
+  const name = c.req.param('name').toLowerCase()
+
+  // Nom valide : lettres minuscules, chiffres et tirets (50 caractères max)
+  if (!/^[a-z0-9-]{1,50}$/.test(name)) {
+    return c.json({ message: m.invalidPokemon }, 400)
+  }
+
+  // ON CONFLICT : si la ligne existe déjà, on ajoute 1 au lieu de la recréer
+  const resultat = await pool.query(
+    `INSERT INTO likes (pokemon_name, total) VALUES ($1, 1)
+     ON CONFLICT (pokemon_name) DO UPDATE SET total = likes.total + 1
+     RETURNING total`,
+    [name],
+  )
+  return c.json({ name, total: resultat.rows[0].total }, 201)
+})
+
 export { app }

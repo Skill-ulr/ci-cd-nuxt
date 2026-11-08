@@ -47,3 +47,9 @@ jobs:
       # Envoie le resultat en production
       - name: Deployer en production
         run: npx vercel deploy --prebuilt --prod
+
+      # Verifie que le site Vercel repond apres le deploiement
+      - name: Smoke test du site SSR
+        run: node scripts/smoke-test.mjs ssr
+        env:
+          SSR_URL: https://ci-cd-nuxt.vercel.app

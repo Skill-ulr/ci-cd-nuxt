@@ -61,3 +61,9 @@ jobs:
         run: >-
           aws lambda wait function-updated
           --function-name ${{ secrets.LAMBDA_FUNCTION_NAME }}
+
+      # Verifie que l'API repond apres le deploiement
+      - name: Smoke test de l'API
+        run: node scripts/smoke-test.mjs api
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
