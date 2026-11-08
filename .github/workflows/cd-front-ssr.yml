@@ -1,0 +1,47 @@
+name: CD Front SSR Vercel
+
+# Se lance quand le workflow "CI Nuxt" se termine sur la branche main
+on:
+  workflow_run:
+    workflows:
+      - CI Nuxt
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # On ne deploie que si la CI est VERTE
+    if: github.event.workflow_run.conclusion == 'success'
+
+    # Ces variables sont lues automatiquement par la commande vercel
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      # On recupere exactement le code qui a passe la CI
+      - name: Recuperer le code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      # Recupere les reglages du projet Vercel (dont NUXT_PUBLIC_API_BASE)
+      - name: Recuperer la configuration Vercel
+        run: npx vercel pull --yes --environment=production
+
+      # Construit le site comme le ferait Vercel
+      - name: Construire le site
+        run: npx vercel build --prod
+
+      # Envoie le resultat en production
+      - name: Deployer en production
+        run: npx vercel deploy --prebuilt --prod
