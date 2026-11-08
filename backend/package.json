@@ -10,7 +10,8 @@
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "typecheck": "tsc --noEmit",
-    "build:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node22 --format=cjs --external:pg-native --outfile=dist/lambda/index.cjs"
+    "build:lambda": "esbuild src/lambda.ts --bundle --platform=node --target=node22 --format=cjs --external:pg-native --outfile=dist/lambda/index.cjs",
+    "migrate": "tsx src/migrate.ts"
   },
   "dependencies": {
     "@hono/node-server": "^2.1.3",
