@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "check:i18n": "node scripts/check-translations.mjs",
-    "smoke": "node scripts/smoke-test.mjs all"
+    "smoke": "node scripts/smoke-test.mjs all",
+    "seo": "node scripts/seo-check.mjs"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.17.0",
