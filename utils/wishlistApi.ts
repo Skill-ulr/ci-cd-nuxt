@@ -1,13 +1,16 @@
 import type { WishlistItem } from './wishlist'
+import { useRuntimeConfig } from '#app'
 
-// Adresse du backend Hono
-const API_URL = 'http://localhost:3001'
+// Adresse du backend Hono, lue dans la configuration Nuxt
+function apiUrl(): string {
+  return useRuntimeConfig().public.apiBase
+}
 
 // GET : récupérer la wishlist
 export async function chargerWishlistApi(
   langue: string,
 ): Promise<WishlistItem[]> {
-  const reponse = await fetch(API_URL + '/wishlist', {
+  const reponse = await fetch(apiUrl() + '/wishlist', {
     // Accept-Language dit au backend dans quelle langue répondre
     headers: { 'Accept-Language': langue },
   })
@@ -24,7 +27,7 @@ export async function ajouterPokemonApi(
   pokemon: WishlistItem,
   langue: string,
 ): Promise<WishlistItem> {
-  const reponse = await fetch(API_URL + '/wishlist', {
+  const reponse = await fetch(apiUrl() + '/wishlist', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +50,7 @@ export async function supprimerPokemonApi(
   id: number,
   langue: string,
 ): Promise<void> {
-  const reponse = await fetch(API_URL + '/wishlist/' + id, {
+  const reponse = await fetch(apiUrl() + '/wishlist/' + id, {
     method: 'DELETE',
     headers: { 'Accept-Language': langue },
   })
