@@ -66,4 +66,4 @@ jobs:
       - name: Smoke test de l'API
         run: node scripts/smoke-test.mjs api
         env:
-          API_BASE_URL: ${{ secrets.API_BASE_URL }}/inexistant
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
