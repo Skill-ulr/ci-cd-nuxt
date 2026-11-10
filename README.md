@@ -4,7 +4,7 @@ PokéWishlist est une petite application web où l'on recherche un Pokémon, on 
 
 # Nuxt Minimal Starter
 
-![Couverture des tests](https://raw.githubusercontent.com/Skill-ulr/ci-cd-nuxt/badges/coverage-badge.svg)
+![Couverture des tests](https://raw.githubusercontent.com/ulr-237/ci-cd-nuxt/badges/coverage-badge.svg)
 
 Taux de couverture des tests (front + backend). Le rapport détaillé est dans le résumé du dernier run de la CI (onglet Actions) et dans l'artefact `rapport-couverture`.
 
