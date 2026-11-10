@@ -1,3 +1,7 @@
+## À propos du projet
+
+PokéWishlist est une petite application web où l'on recherche un Pokémon, on l'ajoute à une wishlist de 6 maximum et on consulte sa fiche, en 4 langues. Je l'ai réalisée dans le cadre du cours de CI/CD de mon Mastère 1 Ingénierie Web et Innovations Digitales à l'IIM. L'application compte moins que la chaîne qui l'entoure : le but était d'apprendre à automatiser les vérifications (lint, tests, build) et les déploiements avec GitHub Actions, sur AWS et Vercel.
+
 # Nuxt Minimal Starter
 
 ![Couverture des tests](https://raw.githubusercontent.com/Skill-ulr/ci-cd-nuxt/badges/coverage-badge.svg)
